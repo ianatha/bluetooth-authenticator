@@ -1,0 +1,14 @@
+#ifndef bluetest_OTPOverBluetooth_h
+#define bluetest_OTPOverBluetooth_h
+
+#define OTPOverBluetoothService @"B8565F34-A174-4B8F-8F83-AB401D37D288"
+#define OTPOverBluetoothAvailableAccounts @"75EA0F1B-1349-4A34-AB18-90B95C74ADF1"
+#define OTPOverBluetoothAccountOTP @"54365900-202F-4E2A-BE29-491DCD28B251"
+
+
+#define TRANSFER_SERVICE_UUID           @"E20A39F4-73F5-4BC4-A12F-17D1AD07A961"
+#define TRANSFER_CHARACTERISTIC_UUID    @"08590F7E-DB05-467E-8757-72F6FAEB13D4"
+#define IAN @"15B2065C-C68C-48FB-8B33-25DAFDFD1355"
+
+
+#endif
