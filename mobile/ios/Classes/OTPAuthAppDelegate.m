@@ -29,6 +29,7 @@
 #import "GTMLocalizedString.h"
 
 static NSString *const kOTPKeychainEntriesArray = @"OTPKeychainEntries";
+static NSString *const kBluetoothStateKey = @"OTPBluetooth";
 
 @interface OTPGoodTokenSheet : UIActionSheet
 @property(readwrite, nonatomic, retain) OTPAuthURL *authURL;
@@ -44,7 +45,7 @@ static NSString *const kOTPKeychainEntriesArray = @"OTPKeychainEntries";
 @property (nonatomic, retain) OTPAuthURL *urlBeingAdded;
 @property (nonatomic, retain) UIAlertView *urlAddAlert;
 
-- (void)saveKeychainArray;
+- (void)persistPrefs;
 - (void)updateUI;
 - (void)updateEditing:(UITableView *)tableview;
 @end
@@ -75,16 +76,13 @@ static NSString *const kOTPKeychainEntriesArray = @"OTPKeychainEntries";
   self.navigationItem = nil;
   self.urlAddAlert = nil;
   self.authURLEntryNavigationItem = nil;
+  self.bluetoothButton = nil;
+  self.bluetoothService = nil;
+
   [super dealloc];
 }
 
 - (void)awakeFromNib {
-  self.legalButton.title
-    = GTMLocalizedString(@"Legal Information",
-                         @"Legal Information Button Title");
-  self.navigationItem.title
-    = GTMLocalizedString(@"Google Authenticator",
-                         @"Product Name");
   self.authURLEntryNavigationItem.title
     = GTMLocalizedString(@"Add Token",
                          @"Add Token Navigation Screen Title");
@@ -108,15 +106,24 @@ static NSString *const kOTPKeychainEntriesArray = @"OTPKeychainEntries";
   self.editButton.enabled = [self.authURLs count] > 0;
 }
 
-- (void)saveKeychainArray {
+- (void)persistPrefs {
   NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
   NSArray *keychainReferences = [self valueForKeyPath:@"authURLs.keychainItemRef"];
   [ud setObject:keychainReferences forKey:kOTPKeychainEntriesArray];
+  [ud setBool:self.bluetoothOn forKey:kBluetoothStateKey];
   [ud synchronize];
 }
 
 #pragma mark -
 #pragma mark Application Delegate
+
+-(void)applicationDidEnterBackground:(UIApplication *)application {
+    [self persistPrefs];
+}
+
+- (void)applicationWillTerminate:(UIApplication *)application {
+    [self persistPrefs];
+}
 
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -140,6 +147,11 @@ static NSString *const kOTPKeychainEntriesArray = @"OTPKeychainEntries";
     [self.navigationController pushViewController:controller animated:NO];
   }
   [self.window makeKeyAndVisible];
+    
+  self.bluetoothService = [[OTPBluetoothService alloc] initWithProvider:self];
+  self.bluetoothOn = [ud boolForKey:kBluetoothStateKey];
+  [self updateBluetooth];
+    
   return YES;
 }
 
@@ -163,6 +175,14 @@ static NSString *const kOTPKeychainEntriesArray = @"OTPKeychainEntries";
                         autorelease];
     self.urlBeingAdded = authURL;
     [self.urlAddAlert show];
+  } else {
+      UIAlertView* dialog = [[[UIAlertView alloc] initWithTitle:@"Unknown URL"
+                                                     message:[url absoluteString]
+                                                    delegate:self
+                                           cancelButtonTitle:@"OK"
+                                           otherButtonTitles:nil]
+                          autorelease];
+      [dialog show];
   }
   return authURL != nil;
 }
@@ -176,7 +196,7 @@ static NSString *const kOTPKeychainEntriesArray = @"OTPKeychainEntries";
   [self.navigationController popToRootViewControllerAnimated:NO];
   [authURL saveToKeychain];
   [self.authURLs addObject:authURL];
-  [self saveKeychainArray];
+  [self persistPrefs];
   [self updateUI];
   UITableView *tableView = (UITableView*)self.rootViewController.view;
   [tableView reloadData];
@@ -254,8 +274,9 @@ static NSString *const kOTPKeychainEntriesArray = @"OTPKeychainEntries";
   NSUInteger oldIndex = [fromIndexPath row];
   NSUInteger newIndex = [toIndexPath row];
   [self.authURLs exchangeObjectAtIndex:oldIndex withObjectAtIndex:newIndex];
-  [self saveKeychainArray];
+  [self persistPrefs];
 }
+
 
 - (void)tableView:(UITableView *)tableView
    commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
@@ -281,7 +302,7 @@ static NSString *const kOTPKeychainEntriesArray = @"OTPKeychainEntries";
     }
     [authURL removeFromKeychain];
     [self.authURLs removeObjectAtIndex:idx];
-    [self saveKeychainArray];
+    [self persistPrefs];
     [tableView endUpdates];
     [self updateUI];
     if ([self.authURLs count] == 0 && self.editingState != kOTPEditingSingleRow) {
@@ -372,6 +393,25 @@ static NSString *const kOTPKeychainEntriesArray = @"OTPKeychainEntries";
   OTPAuthAboutController *controller
       = [[[OTPAuthAboutController alloc] init] autorelease];
   [self.navigationController pushViewController:controller animated:YES];
+}
+
+- (void)updateBluetooth {
+    if (self.bluetoothOn) {
+        [self.bluetoothButton setStyle:UIBarButtonItemStyleDone];
+        [self.bluetoothService start];
+    } else {
+        [self.bluetoothButton setStyle:UIBarButtonItemStyleBordered];
+        [self.bluetoothService stop];
+    }
+}
+
+- (IBAction)toggleBluetooth:(id)sender {
+    self.bluetoothOn = !self.bluetoothOn;
+    [self updateBluetooth];
+}
+
+- (NSString *)getOTPForAccount:(NSString *)account {
+    return [NSString stringWithFormat:@"%@", ((OTPAuthURL*)[self.authURLs objectAtIndex:0]).otpCode];
 }
 
 @end

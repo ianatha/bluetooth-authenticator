@@ -18,6 +18,7 @@
 
 #import "RootViewController.h"
 #import "OTPAuthURLEntryController.h"
+#import "OTPBluetoothService.h"
 
 typedef enum {
   kOTPNotEditing,
@@ -31,7 +32,8 @@ typedef enum {
     UITableViewDataSource,
     UITableViewDelegate,
     UIActionSheetDelegate,
-    UIAlertViewDelegate>
+    UIAlertViewDelegate,
+    OTPBluetoothServiceProvider>
 @property(nonatomic, retain) IBOutlet UINavigationController *navigationController;
 @property(nonatomic, retain) IBOutlet UIWindow *window;
 @property(nonatomic, retain) IBOutlet UINavigationController *authURLEntryController;
@@ -41,5 +43,11 @@ typedef enum {
 
 - (IBAction)addAuthURL:(id)sender;
 - (IBAction)showLegalInformation:(id)sender;
+
+@property(retain) OTPBluetoothService *bluetoothService;
+@property BOOL bluetoothOn;
+@property(nonatomic, retain) IBOutlet UIBarButtonItem *bluetoothButton;
+- (IBAction)toggleBluetooth:(id)sender;
+
 
 @end
