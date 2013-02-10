@@ -12,12 +12,24 @@
 	<string>Icon.png</string>
 	<key>CFBundleIconFiles</key>
 	<array>
-		<string>Icon.png</string>
-		<string>Icon_2x.png</string>
+		<string>blauth-52.png</string>
+		<string>blauth-114.png</string>
 		<string>Icon-iPad.png</string>
 	</array>
+	<key>CFBundleIcons</key>
+	<dict>
+		<key>CFBundlePrimaryIcon</key>
+		<dict>
+			<key>CFBundleIconFiles</key>
+			<array>
+				<string>blauth-52.png</string>
+				<string>blauth-114.png</string>
+				<string>Icon-iPad.png</string>
+			</array>
+		</dict>
+	</dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.google.${PRODUCT_NAME:rfc1034identifier}</string>
+	<string>com.box.hackathon-atha.${PRODUCT_NAME:rfc1034identifier}</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

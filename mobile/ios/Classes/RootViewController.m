@@ -63,9 +63,7 @@
   view.backgroundColor = [UIColor googleBlueBackgroundColor];
 
   UIButton *titleButton = [[[UIButton alloc] init] autorelease];
-  [titleButton setImage:[UIImage imageNamed:@"GoogleNavBarLogo.png"]
-               forState:UIControlStateNormal];
-  [titleButton setTitle:GTMLocalizedString(@"Authenticator", nil)
+  [titleButton setTitle:@"Blauth"
                forState:UIControlStateNormal];
   UILabel *titleLabel = [titleButton titleLabel];
   titleLabel.font = [UIFont boldSystemFontOfSize:20.0];

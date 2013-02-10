@@ -47,9 +47,6 @@
                                                      action:@selector(addAuthURL:)]
        autorelease];
   [navItem setRightBarButtonItem:button animated:NO];
-
-  NSString *label = GTMLocalizedString(@"Welcome_label", @"Welcome text");
-  welcomeText_.text = label;
 }
 
 @end
