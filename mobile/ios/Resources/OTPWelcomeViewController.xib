@@ -45,6 +45,7 @@
 						<int key="NSvFlags">306</int>
 						<string key="NSFrame">{{20, 20}, {280, 142}}</string>
 						<reference key="NSSuperview" ref="191373211"/>
+						<reference key="NSNextKeyView" ref="1016323608"/>
 						<object class="NSColor" key="IBUIBackgroundColor" id="686479136">
 							<int key="NSColorSpace">1</int>
 							<bytes key="NSRGB">MC45MjE1Njg2MyAwLjkzNzI1NDkxIDAuOTc2NDcwNTkAA</bytes>
@@ -90,6 +91,7 @@ YW4gYWNjb3VudCBieSBwcmVzc2luZzo</string>
 						<int key="NSvFlags">298</int>
 						<string key="NSFrame">{{20, 209}, {280, 37}}</string>
 						<reference key="NSSuperview" ref="191373211"/>
+						<reference key="NSNextKeyView"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<int key="IBUIContentMode">4</int>
@@ -130,6 +132,7 @@ YW4gYWNjb3VudCBieSBwcmVzc2luZzo</string>
 				</object>
 				<string key="NSFrame">{{0, 64}, {320, 372}}</string>
 				<reference key="NSSuperview"/>
+				<reference key="NSNextKeyView" ref="148319849"/>
 				<reference key="IBUIBackgroundColor" ref="686479136"/>
 				<object class="IBUISimulatedStatusBarMetrics" key="IBUISimulatedStatusBarMetrics"/>
 				<object class="IBUISimulatedNavigationBarMetrics" key="IBUISimulatedTopBarMetrics">
