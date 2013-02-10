@@ -16,7 +16,6 @@
 		0A70F1A8169AE25C00F118A8 /* Main.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A70F1A6169AE25C00F118A8 /* Main.xib */; };
 		0A70F1C6169AE29D00F118A8 /* IOBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A70F1C5169AE29D00F118A8 /* IOBluetooth.framework */; };
 		0AE1F40B169E41F300A119C5 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AE1F40A169E41F300A119C5 /* Carbon.framework */; };
-		0AFB66CC16C851BE006DAF34 /* blauth.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0AFB66CB16C851BE006DAF34 /* blauth.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -128,7 +127,7 @@
 		0A70F184169AE25C00F118A8 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0450;
+				LastUpgradeCheck = 0460;
 				ORGANIZATIONNAME = "Ian Atha";
 			};
 			buildConfigurationList = 0A70F187169AE25C00F118A8 /* Build configuration list for PBXProject "blauth-desktop" */;
@@ -157,7 +156,6 @@
 				0A70F1A8169AE25C00F118A8 /* Main.xib in Resources */,
 				0A5885F016A0154D0041B46C /* blauth-512.png in Resources */,
 				0A5885F716A0165D0041B46C /* blauth-512.icns in Resources */,
-				0AFB66CC16C851BE006DAF34 /* blauth.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -250,7 +248,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "bluetest/bluetest-Prefix.pch";
+				GCC_PREFIX_HEADER = "blauth-desktop-Prefix.pch";
 				INFOPLIST_FILE = "$(SRCROOT)/blauth.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -266,7 +264,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "bluetest/bluetest-Prefix.pch";
+				GCC_PREFIX_HEADER = "blauth-desktop-Prefix.pch";
 				INFOPLIST_FILE = "$(SRCROOT)/blauth.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -1,5 +1,5 @@
 #import "MainDelegate.h"
-#import "../OTPOverBluetooth.h"
+#import "OTPOverBluetooth.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <Carbon/Carbon.h>
