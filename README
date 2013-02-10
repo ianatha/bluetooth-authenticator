@@ -1,3 +1,12 @@
-Blauth
+Developed during Box's January 2013 hackathon by Ian Atha.
 
+Blauth
+======
 A Bluetooth-enabled fork of Google Authenticator for iOS, along with a Mac OS client.
+
+
+Caveats
+-------
+* Relies on Bluetooth Pairing for a all-or-nothing authorization.
+* Doesn't support multiple One-Time-Password accounts (always fetches the first).
+* Ill-defined Bluetooth Protocol. 
