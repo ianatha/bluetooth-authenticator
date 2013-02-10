@@ -28,14 +28,16 @@
 #import "GTMLocalizedString.h"
 #import "UIColor+MobileColors.h"
 
+#import <QRCodeReader.h>
+#import <UniversalResultParser.h>
+#import <ParsedResult.h>
+#import <ResultAction.h>
+
+
 @interface OTPAuthURLEntryController ()
 @property(nonatomic, readwrite, assign) UITextField *activeTextField;
 @property(nonatomic, readwrite, assign) UIBarButtonItem *doneButtonItem;
 @property(nonatomic, readwrite, retain) Decoder *decoder;
-// queue is retained using dispatch_queue retain semantics.
-@property (nonatomic, retain) __attribute__((NSObject)) dispatch_queue_t queue;
-@property (nonatomic, retain) AVCaptureSession *avSession;
-@property BOOL handleCapture;
 
 - (void)keyboardWasShown:(NSNotification*)aNotification;
 - (void)keyboardWillBeHidden:(NSNotification*)aNotification;
@@ -53,9 +55,6 @@
 @synthesize scrollView = scrollView_;
 @synthesize activeTextField = activeTextField_;
 @synthesize decoder = decoder_;
-@dynamic queue;
-@synthesize avSession = avSession_;
-@synthesize handleCapture = handleCapture_;
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
   if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
@@ -81,9 +80,6 @@
   self.scanBarcodeButton = nil;
   self.scrollView = nil;
   self.decoder = nil;
-  self.queue = nil;
-  self.avSession = nil;
-  self.queue = nil;
   [super dealloc];
 }
 
@@ -143,8 +139,6 @@
 
 - (void)viewWillDisappear:(BOOL)animated {
   self.doneButtonItem = nil;
-  self.handleCapture = NO;
-  [self.avSession stopRunning];
 }
 
 - (dispatch_queue_t)queue {
@@ -276,124 +270,53 @@
 }
 
 - (IBAction)cancel:(id)sender {
-  self.handleCapture = NO;
-  [self.avSession stopRunning];
   [self dismissModalViewControllerAnimated:NO];
 }
 
 - (IBAction)scanBarcode:(id)sender {
-  if (!self.avSession) {
-    self.avSession = [[[AVCaptureSession alloc] init] autorelease];
-    AVCaptureDevice *device =
-      [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    AVCaptureDeviceInput *captureInput =
-      [AVCaptureDeviceInput deviceInputWithDevice:device error:nil];
-    [self.avSession addInput:captureInput];
-    dispatch_queue_t queue = dispatch_queue_create("OTPAuthURLEntryController",
-                                                   0);
-    self.queue = queue;
-    dispatch_release(queue);
-    AVCaptureVideoDataOutput *captureOutput =
-      [[[AVCaptureVideoDataOutput alloc] init] autorelease];
-    [captureOutput setAlwaysDiscardsLateVideoFrames:YES];
-    [captureOutput setMinFrameDuration:CMTimeMake(5,1)];  // At most 5 frames/sec.
-    [captureOutput setSampleBufferDelegate:self
-                                     queue:self.queue];
-    NSNumber *bgra = [NSNumber numberWithUnsignedInt:kCVPixelFormatType_32BGRA];
-    NSDictionary *videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-                                   bgra, kCVPixelBufferPixelFormatTypeKey,
-                                   nil];
-    [captureOutput setVideoSettings:videoSettings];
-    [self.avSession addOutput:captureOutput];
-  }
-
-  AVCaptureVideoPreviewLayer *previewLayer
-    = [AVCaptureVideoPreviewLayer layerWithSession:self.avSession];
-  [previewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
-
-  UIButton *cancelButton =
-    [UIButton buttonWithType:UIButtonTypeRoundedRect];
-  NSString *cancelString
-    = GTMLocalizedString(@"Cancel", @"Cancel button for taking pictures");
-  cancelButton.accessibilityLabel = @"Cancel";
-  CGFloat height = [UIFont systemFontSize];
-  CGSize size
-    = [cancelString sizeWithFont:[UIFont systemFontOfSize:height]];
-  [cancelButton setTitle:cancelString forState:UIControlStateNormal];
-
-  UIViewController *previewController
-    = [[[UIViewController alloc] init] autorelease];
-  [previewController.view.layer addSublayer:previewLayer];
-
-  CGRect frame = previewController.view.bounds;
-  previewLayer.frame = frame;
-  OTPScannerOverlayView *overlayView
-    = [[[OTPScannerOverlayView alloc] initWithFrame:frame] autorelease];
-  [previewController.view addSubview:overlayView];
-
-  // Center the cancel button horizontally, and put it
-  // kBottomPadding from the bottom of the view.
-  static const int kBottomPadding = 10;
-  static const int kInternalXMargin = 10;
-  static const int kInternalYMargin = 10;
-  frame = CGRectMake(CGRectGetMidX(frame)
-                            - ((size.width / 2) + kInternalXMargin),
-                            CGRectGetHeight(frame)
-                            - (height + (2 * kInternalYMargin) + kBottomPadding),
-                            (2  * kInternalXMargin) + size.width,
-                            height + (2 * kInternalYMargin));
-  [cancelButton setFrame:frame];
-
-  // Set it up so that if the view should resize, the cancel button stays
-  // h-centered and v-bottom-fixed in the view.
-  cancelButton.autoresizingMask = (UIViewAutoresizingFlexibleTopMargin |
-                                   UIViewAutoresizingFlexibleLeftMargin |
-                                   UIViewAutoresizingFlexibleRightMargin);
-  [cancelButton addTarget:self
-                   action:@selector(cancel:)
-         forControlEvents:UIControlEventTouchUpInside];
-  [overlayView addSubview:cancelButton];
-
-  [self presentModalViewController:previewController animated:NO];
-  self.handleCapture = YES;
-  [self.avSession startRunning];
+    ZXingWidgetController *widController = [[ZXingWidgetController alloc] initWithDelegate:self showCancel:YES OneDMode:NO];
+    QRCodeReader* qrcodeReader = [[QRCodeReader alloc] init];
+    NSSet *readers = [[NSSet alloc ] initWithObjects:qrcodeReader,nil];
+    [qrcodeReader release];
+    widController.readers = readers;
+    [readers release];
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    widController.soundToPlay =
+    [NSURL fileURLWithPath:[mainBundle pathForResource:@"beep-beep" ofType:@"aiff"] isDirectory:NO];
+    [self presentModalViewController:widController animated:YES];
+    [widController release];
 }
 
-- (void)captureOutput:(AVCaptureOutput *)captureOutput
-didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
-       fromConnection:(AVCaptureConnection *)connection {
-  if (!self.handleCapture) return;
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-  CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-  if (imageBuffer) {
-    CVReturn ret = CVPixelBufferLockBaseAddress(imageBuffer, 0);
-    if (ret == kCVReturnSuccess) {
-      uint8_t *base = (uint8_t *)CVPixelBufferGetBaseAddress(imageBuffer);
-      size_t bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
-      size_t width = CVPixelBufferGetWidth(imageBuffer);
-      size_t height = CVPixelBufferGetHeight(imageBuffer);
-      CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-      CGContextRef context
-        = CGBitmapContextCreate(base, width, height, 8, bytesPerRow, colorSpace,
-                                kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst);
-      CGColorSpaceRelease(colorSpace);
-      CGImageRef cgImage = CGBitmapContextCreateImage(context);
-      CGContextRelease(context);
-      UIImage *image = [UIImage imageWithCGImage:cgImage];
-      CFRelease(cgImage);
-      CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
-      [self.decoder performSelectorOnMainThread:@selector(decodeImage:)
-                                     withObject:image
-                                  waitUntilDone:NO];
+- (void)zxingController:(ZXingWidgetController*)controller didScanResult:(NSString *)result {
+    NSURL *url = [NSURL URLWithString:result];
+    OTPAuthURL *authURL = [OTPAuthURL authURLWithURL:url secret:nil];
+    if (authURL) {
+        [self.delegate authURLEntryController:self didCreateAuthURL:authURL];
+        [self dismissModalViewControllerAnimated:NO];
     } else {
-      NSLog(@"Unable to lock buffer %d", ret);
-    }
-  } else {
-    NSLog(@"Unable to get imageBuffer from %@", sampleBuffer);
-  }
-  [pool release];
+      NSString *title = GTMLocalizedString(@"Invalid Barcode",
+                                              @"Alert title describing a bad barcode");
+         NSString *message = [NSString stringWithFormat:
+                              GTMLocalizedString(@"The barcode '%@' is not a valid "
+                                                 @"authentication token barcode.",
+                                                 @"Alert describing invalid barcode type."),
+                    result];
+         NSString *button = GTMLocalizedString(@"Try Again",
+                                               @"Button title to try again");
+         UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:title
+                                                          message:message
+                                                         delegate:self
+                                                cancelButtonTitle:button
+                                                otherButtonTitles:nil]
+                               autorelease];
+         [alert show];
+       }
+
 }
 
+- (void)zxingControllerDidCancel:(ZXingWidgetController*)controller {
+    [self dismissModalViewControllerAnimated:YES];
+}
 
 #pragma mark -
 #pragma mark UITextField Delegate Methods
@@ -418,57 +341,11 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
   self.activeTextField = nil;
 }
 
-
-#pragma mark -
-#pragma mark DecoderDelegate
-
-- (void)decoder:(Decoder *)decoder
- didDecodeImage:(UIImage *)image
-    usingSubset:(UIImage *)subset
-     withResult:(TwoDDecoderResult *)twoDResult {
-  if (self.handleCapture) {
-    self.handleCapture = NO;
-    NSString *urlString = twoDResult.text;
-    NSURL *url = [NSURL URLWithString:urlString];
-    OTPAuthURL *authURL = [OTPAuthURL authURLWithURL:url
-                                              secret:nil];
-    [self.avSession stopRunning];
-    if (authURL) {
-      [self.delegate authURLEntryController:self didCreateAuthURL:authURL];
-      [self dismissModalViewControllerAnimated:NO];
-    } else {
-      NSString *title = GTMLocalizedString(@"Invalid Barcode",
-                                           @"Alert title describing a bad barcode");
-      NSString *message = [NSString stringWithFormat:
-                           GTMLocalizedString(@"The barcode '%@' is not a valid "
-                                              @"authentication token barcode.",
-                                              @"Alert describing invalid barcode type."),
-                 urlString];
-      NSString *button = GTMLocalizedString(@"Try Again",
-                                            @"Button title to try again");
-      UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:title
-                                                       message:message
-                                                      delegate:self
-                                             cancelButtonTitle:button
-                                             otherButtonTitles:nil]
-                            autorelease];
-      [alert show];
-    }
-  }
-}
-
-- (void)decoder:(Decoder *)decoder failedToDecodeImage:(UIImage *)image
-    usingSubset:(UIImage *)subset
-         reason:(NSString *)reason {
-}
-
 #pragma mark -
 #pragma mark UIAlertViewDelegate
 
 - (void)alertView:(UIAlertView *)alertView
     didDismissWithButtonIndex:(NSInteger)buttonIndex {
-  self.handleCapture = YES;
-  [self.avSession startRunning];
 }
 
 @end

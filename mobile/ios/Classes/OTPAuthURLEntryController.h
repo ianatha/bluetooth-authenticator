@@ -20,6 +20,8 @@
 #import <AVFoundation/AVFoundation.h>
 #import "DecoderDelegate.h"
 
+#import "ZXingWidgetController.h"
+
 @class OTPAuthURL;
 @class Decoder;
 @protocol OTPAuthURLEntryControllerDelegate;
@@ -29,7 +31,8 @@
      UINavigationControllerDelegate,
      DecoderDelegate,
      UIAlertViewDelegate,
-     AVCaptureVideoDataOutputSampleBufferDelegate> {
+     AVCaptureVideoDataOutputSampleBufferDelegate,
+     ZXingDelegate> {
  @private
   dispatch_queue_t queue_;
 }
